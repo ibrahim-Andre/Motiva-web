@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import logo from "./assets/logo.png";
+import { supabase } from "./lib/supabase";
+import { sendBookingEmail } from "./api/sendBooking";
+
 
 export default function App() {
   const [language, setLanguage] = useState("en");
@@ -9,6 +12,12 @@ export default function App() {
   const [years, setYears] = useState(0);
   const [loading, setLoading] = useState(true);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [service, setService] = useState("Auto Repair");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
 
@@ -37,6 +46,61 @@ export default function App() {
     }, 10);
 
   }, []);
+
+  const handleBooking = async () => {
+
+    if (!fullName || !phone) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+
+      setSubmitting(true);
+
+      const { error } = await supabase
+        .from("bookings")
+        .insert([
+          {
+            full_name: fullName,
+            phone: phone,
+            service: service,
+          },
+        ]);
+
+      if (error) {
+        console.error(error);
+        alert("Something went wrong");
+        return;
+      }
+
+        await sendBookingEmail({
+            fullName,
+            phone,
+            service,
+        });
+
+      setSuccess(true);
+
+      setFullName("");
+      setPhone("");
+      setService("Auto Repair");
+
+      setTimeout(() => {
+        setSuccess(false);
+        setBookingOpen(false);
+      }, 2000);
+
+    } catch (err) {
+
+      console.error(err);
+
+    } finally {
+
+      setSubmitting(false);
+
+    }
+  };
 
   const content = {
     en: {
@@ -219,6 +283,29 @@ export default function App() {
               </div>
 
             </div>
+
+                          {/* MINI ADMIN LINKS */}
+                          <div className="absolute top-2 right-6 hidden md:flex items-center gap-4 text-[11px] text-white/70 uppercase tracking-widest">
+
+                              <a
+                                  href="/login"
+                                  className="hover:text-red-500 transition"
+                              >
+                                  Service Portal
+                              </a>
+
+                              <span className="text-zinc-700">
+                                  /
+                              </span>
+
+                              <a
+                                  href="/taxi-admin"
+                                  className="hover:text-red-500 transition"
+                              >
+                                  Taxi Dispatch
+                              </a>
+
+                          </div>
 
             {/* MOBILE MENU */}
             {menuOpen && (
@@ -748,17 +835,24 @@ export default function App() {
 
                     <input
                       type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                       placeholder="Full Name"
                       className="w-full bg-black border border-zinc-700 rounded-xl px-5 py-4 outline-none focus:border-red-500"
                     />
 
                     <input
                       type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       placeholder="Phone Number"
                       className="w-full bg-black border border-zinc-700 rounded-xl px-5 py-4 outline-none focus:border-red-500"
                     />
 
-                    <select className="w-full bg-black border border-zinc-700 rounded-xl px-5 py-4 outline-none focus:border-red-500">
+                    <select
+                      value={service}
+                      onChange={(e) => setService(e.target.value)}
+                      className="w-full bg-black border border-zinc-700 rounded-xl px-5 py-4 outline-none focus:border-red-500">
 
                       <option>
                         Auto Repair
@@ -774,9 +868,20 @@ export default function App() {
 
                     </select>
 
-                    <button className="w-full bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)] py-4 rounded-xl font-semibold hover:bg-red-700 transition">
-                      Confirm Booking
+                    <button
+                      onClick={handleBooking}
+                      disabled={submitting}
+                      className="w-full bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)] py-4 rounded-xl font-semibold hover:bg-red-700 transition">
+                      {submitting ? "Sending..." : "Confirm Booking"}
                     </button>
+                    {success && (
+
+                      <div className="bg-green-500/20 border border-green-500 text-green-400 rounded-xl p-4 text-center mt-4">
+
+                        Booking request sent successfully!
+                      </div>
+
+                    )}
 
                   </div>
 
