@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import Login from './pages/Login'
+import TaxiAdmin from './pages/TaxiAdmin'
+import "leaflet/dist/leaflet.css";
 
 import {
     BrowserRouter,
@@ -22,8 +24,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
                 <Route path="/" element={<App />} />
 
-                <Route path="/admin" element={<Admin />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/taxi-admin" element={<TaxiAdmin />} />
 
             </Routes>
 
