@@ -323,8 +323,8 @@ export default function TaxiAdmin() {
                                     key={driver.id}
 
                                     position={[
-                                        57.7089 + index * 0.01,
-                                        11.9746 + index * 0.01,
+                                        driver.latitude || 57.7089,
+                                        driver.longitude || 11.9746,
                                     ]}
                                 >
 
@@ -332,17 +332,18 @@ export default function TaxiAdmin() {
 
                                         <div className="text-black">
 
-                                            <strong>
+                                            <h3 className="font-bold">
                                                 {driver.full_name}
-                                            </strong>
+                                            </h3>
 
-                                            <br />
+                                            <p>
+                                                {driver.car}
+                                            </p>
 
-                                            {driver.car}
-
-                                            <br />
-
-                                            Status: {driver.status}
+                                            <p>
+                                                Status:
+                                                {driver.status}
+                                            </p>
 
                                         </div>
 
